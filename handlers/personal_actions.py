@@ -80,7 +80,7 @@ async def help(message: Message):
             "/password - генерує випадковий пароль, довжина максимум 10 символів\n\n"
             "<b>Команди які я вмію виконувати, для адміністраторів:</b>\n"
             "Скоро з'явиться"
-            )
+        )
 
 
 # password
@@ -120,6 +120,7 @@ async def password(message: Message):
                 break
             await bot.send_message(user_id_to_spam, "Spam 😈😈😈")
 
+
 @router.message(Command("profile"))
 async def profile(message: Message):
     cur.execute("SELECT * FROM users WHERE user_id=?", (message.from_user.id,))
@@ -148,6 +149,7 @@ async def profile(message: Message):
             f"🧑🏻‍💻 Твій псевдонім - @{username}\n"
             f"🪪 Твоє ім'я в Telegram - {full_name}\n"
             f"📆 Дата реєсттрації - {date}\n")
+
 
 # signup
 @router.message(Command("signup"))
@@ -255,7 +257,6 @@ async def send_welcome(message: Message):
             "Ромбі, ти де?\nромб\nа ти хто?\nхто тут красава?)")
 
 
-
 async def show_summary(message: Message, data: Dict[str, Any]):
     name = data["name"]
     age = data["age"]
@@ -271,4 +272,5 @@ async def show_summary(message: Message, data: Dict[str, Any]):
                 (message.from_user.id, message.from_user.username, message.from_user.full_name, name, age, email, date))
     base.commit()
     # await message.answer(text=text)
-    await message.answer("🥳 Вітаю! Ти успшіно зареєструвався в Rombi!!!\nДля того щоб подивтися свій обліковий запис, напиши - /profile")
+    await message.answer(
+        "🥳 Вітаю! Ти успшіно зареєструвався в Rombi!!!\nДля того щоб подивтися свій обліковий запис, напиши - /profile")
