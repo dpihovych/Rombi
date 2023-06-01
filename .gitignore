@@ -1,0 +1,6 @@
+.env
+venv
+run.bat
+Rombi.db
+__pycache__
+.idea
