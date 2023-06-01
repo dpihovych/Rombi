@@ -5,6 +5,7 @@ import pytz
 from aiogram import Router, Bot, F, types
 import tzlocal
 import string
+from loguru import logger
 import random
 from aiogram.filters import Command
 import config
@@ -14,6 +15,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 import sqlite3 as sq
+
+from filters.bot_filters import ChatTypeFilter
 
 router = Router()
 bot = Bot(token=config.BOT_TOKEN, parse_mode="HTML")
@@ -50,9 +53,6 @@ async def start(message: Message):
     cur.execute("SELECT * FROM users WHERE user_id=?", (message.from_user.id,))
     r = cur.fetchone()
     if not r:
-        # =
-        # print("successfully added ", message.from_user.id, message.from_user.username, message.from_user.full_name)
-
         await message.answer("Привіт, я бот! 👋\n"
                              "І я побачив, що тебе немає в базі данних ☹️\n"
                              "тому щоб отримати доступ до інших моїх команди, напиши - /signup")
@@ -121,6 +121,17 @@ async def password(message: Message):
             await bot.send_message(user_id_to_spam, "Spam 😈😈😈")
 
 
+@router.message(Command("site"))
+async def password(message: Message):
+    cur.execute("SELECT * FROM users WHERE user_id=?", (message.from_user.id,))
+    r = cur.fetchone()
+    if not r:
+        await message.answer("❌ Тобі потрібно зареєструватися в Rombi і тоді тобі стане доступна ця команда! Щоб "
+                             "зареєструатися, напиши /signup")
+    else:
+        await message.answer("Ось <a href='https://itsfera.vercel.app/'>посилання</a> на наш сайт! 🌐")
+
+
 @router.message(Command("profile"))
 async def profile(message: Message):
     cur.execute("SELECT * FROM users WHERE user_id=?", (message.from_user.id,))
@@ -152,7 +163,12 @@ async def profile(message: Message):
 
 
 # signup
-@router.message(Command("signup"))
+@router.message(ChatTypeFilter(chat_type=["channel", "group", "supergroup"]), Command("signup"))
+async def signup(message: Message, state: FSMContext):
+    await message.answer("❌ Перейди в особисті повідомлення і там вже реєструйся 😉")
+
+
+@router.message(ChatTypeFilter(chat_type=["private"]), Command("signup"))
 async def signup(message: Message, state: FSMContext):
     await state.set_state(Signup.name)
     await message.answer("Як тебе звати?")
@@ -167,7 +183,7 @@ async def name(message: Message, state: FSMContext):
 
 @router.message(Signup.age)
 async def age(message: Message, state: FSMContext):
-    if message.text.isdigit() and len(message.text) < 2:
+    if message.text.isdigit() and len(message.text) < 3:
         await state.update_data(age=message.text)
         await state.set_state(Signup.email)
         await message.answer(
@@ -271,6 +287,24 @@ async def show_summary(message: Message, data: Dict[str, Any]):
                 'VALUES (?, ?, ?, ?, ?, ?, ?)',
                 (message.from_user.id, message.from_user.username, message.from_user.full_name, name, age, email, date))
     base.commit()
-    # await message.answer(text=text)
     await message.answer(
         "🥳 Вітаю! Ти успшіно зареєструвався в Rombi!!!\nДля того щоб подивтися свій обліковий запис, напиши - /profile")
+
+
+@router.message(Command("report"))
+async def report(message: Message):
+    report = message.text.replace("/report ", "")
+    logger.info(
+        "User {user} report message {message} in chat {chat} from user {from_user}",
+        user=message.from_user.id,
+        message=message.message_id,
+        chat=message.chat.id,
+        from_user=message.reply_to_message.from_user.id,
+    )
+    await bot.send_message(config.BOT_OWNER, f"Була надіслана скарга!\n"
+                                             f"<b>Текст скарги: {report}</b>\n\n"
+                                             f"<b>Інформація про того хто надсілав скаргу і на кого</b>\n"
+                                             f"ID користувача, що надіслав скаргу:<b> {message.from_user.id}</b>\n"
+                                             f"Username користувача, що надіслав скаргу:<b> {message.from_user.username}</b>\n"
+                                             f"ID який отримав скаргу:<b> {message.reply_to_message.from_user.id}</b>\n"
+                                             f"Username який отримав скаргу:<b> {message.reply_to_message.from_user.username}</b>")

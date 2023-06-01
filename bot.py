@@ -9,7 +9,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 import handlers
 import filters
 from filters.bot_filters import IsChatAdmin
-from handlers import personal_actions, rp_cmds, admin, moderation, qr #registration  # , no_prefix
+from handlers import personal_actions, rp_cmds, admin, moderation, no_prefix, qr, inline_mode #registration  # , no_prefix
 
 
 async def main():
@@ -23,10 +23,10 @@ async def main():
 
 
     # роутери
-    #dp.include_router(registration.router)
+    dp.include_router(inline_mode.router)
     dp.include_router(personal_actions.router)
     dp.include_router(rp_cmds.router)
-    # dp.include_router(no_prefix.router)
+    dp.include_router(no_prefix.router)
     dp.include_router(admin.router)
     dp.include_router(moderation.router)
     dp.include_router(qr.router)

@@ -23,6 +23,10 @@ async def putin(message: types.Message):
 async def putin(message: types.Message):
     await message.answer(" - ху*ло")
 
+@router.message(Text(text=['ІДИ В ДУПУ']))
+async def putin(message: types.Message):
+    await message.answer("Там платно как би да, такщо іди сам в дупу і поцілуй мене в дупу!")
+
 
 @router.message(Text(text=['Зеленський', 'ЗЕЛЕНСЬКИЙ']))
 async def zelenskiy(message: types.Message):
